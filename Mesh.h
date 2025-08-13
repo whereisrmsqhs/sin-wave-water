@@ -11,10 +11,13 @@ using Microsoft::WRL::ComPtr;
 // 같은 메쉬를 여러번 그릴 때 버퍼들을 재사용
 struct Mesh {
 
-    ComPtr<ID3D11Buffer> m_vertexBuffer;
-    ComPtr<ID3D11Buffer> m_indexBuffer;
-    ComPtr<ID3D11Buffer> m_vertexConstantBuffer;
-    ComPtr<ID3D11Buffer> m_pixelConstantBuffer;
+    ComPtr<ID3D11Buffer> vertexBuffer;
+    ComPtr<ID3D11Buffer> indexBuffer;
+    ComPtr<ID3D11Buffer> vertexConstantBuffer;
+    ComPtr<ID3D11Buffer> pixelConstantBuffer;
+
+    ComPtr<ID3D11Texture2D> texture;
+    ComPtr<ID3D11ShaderResourceView> textureResourceView;
 
     UINT m_indexCount = 0;
 };

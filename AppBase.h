@@ -55,7 +55,7 @@ class AppBase {
         ComPtr<ID3D11InputLayout> &inputLayout);
     void CreatePixelShader(const wstring &filename,
                            ComPtr<ID3D11PixelShader> &pixelShader);
-    void CreateIndexBuffer(const vector<uint16_t> &indices,
+    void CreateIndexBuffer(const vector<uint32_t> &indices,
                            ComPtr<ID3D11Buffer> &m_indexBuffer);
 
     template <typename T_VERTEX>
@@ -135,6 +135,8 @@ class AppBase {
     void CreateTexture(const std::string filename,
                        ComPtr<ID3D11Texture2D> &texture,
                        ComPtr<ID3D11ShaderResourceView> &textureResourceView);
+    void CreateCubemapTexture(const wchar_t *filename,
+                              ComPtr<ID3D11ShaderResourceView> &texResView);
 
   public:
     // 변수 이름 붙이는 규칙은 VS DX11/12 기본 템플릿을 따릅니다.

@@ -1,33 +1,29 @@
 #pragma once
 
 #include <directxtk/SimpleMath.h>
+#include <string>
 #include <vector>
+
+#include "Vertex.h"
+#include "MeshData.h"
 
 namespace hlab {
 
 using DirectX::SimpleMath::Vector2;
 using DirectX::SimpleMath::Vector3;
 
-struct Vertex {
-    Vector3 position;
-    Vector3 normal;
-    Vector2 texcoord;
-};
-
-struct MeshData {
-    std::vector<Vertex> vertices;
-    std::vector<uint16_t> indices;
-};
-
 class GeometryGenerator {
   public:
+    static vector<MeshData> ReadFromFile(std::string basePath,
+                                         std::string filename);
+
     static MeshData MakeSquare();
-    static MeshData MakeBox();
     static MeshData MakeGrid(const float width, const float height,
                              const int numSlices, const int numStacks);
+    static MeshData MakeBox(const float scale = 1.0f);
     static MeshData MakeCylinder(const float bottomRadius,
                                  const float topRadius, float height,
-                                 int sliceCount);
+                                 int numSlices);
     static MeshData MakeSphere(const float radius, const int numSlices,
                                const int numStacks);
     static MeshData MakeTetrahedron();

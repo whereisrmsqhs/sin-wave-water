@@ -138,15 +138,24 @@
     <ClCompile Include="AppBase.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CubeMapping.h" />
     <ClInclude Include="ExampleApp.h" />
     <ClInclude Include="AppBase.h" />
     <ClInclude Include="GeometryGenerator.h" />
+    <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshData.h" />
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Standard-Cube-Map\diffusion.dds" />
+    <Image Include="..\..\Standard-Cube-Map\output_iem_diffuse.dds" />
+    <Image Include="..\..\Standard-Cube-Map\output_pmrem_specular.dds" />
+    <Image Include="..\..\Standard-Cube-Map\skybox2.dds" />
+    <Image Include="..\..\Standard-Cube-Map\specular.dds" />
     <Image Include="korea.jpg" />
     <Image Include="us.png" />
     <Image Include="crate2_diffuse.png" />
@@ -161,6 +170,18 @@
     <FxCompile Include="BasicVertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="CubeMappingPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="CubeMappingVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="NormalPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

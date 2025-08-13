@@ -1,4 +1,5 @@
 #include "GeometryGenerator.h"
+#include "MeshData.h"
 
 #include <iostream>
 
@@ -56,14 +57,12 @@ MeshData GeometryGenerator::MakeSquare() {
     return meshData;
 }
 
-MeshData GeometryGenerator::MakeBox() {
+MeshData GeometryGenerator::MakeBox(const float scale) {
 
     vector<Vector3> positions;
     vector<Vector3> colors;
     vector<Vector3> normals;
     vector<Vector2> texcoords; // ÅØ½ºÃç ÁÂÇ¥
-
-    const float scale = 1.0f;
 
     // À­¸é
     positions.push_back(Vector3(-1.0f, 1.0f, -1.0f) * scale);
@@ -203,17 +202,14 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
     MeshData meshData;
 
     vector<Vertex> &vertices = meshData.vertices;
-    vector<uint16_t> &indices = meshData.indices;
+    vector<uint32_t> &indices = meshData.indices;
 
-    // y = -0.5f * height ÀÎ Á¡µé
+    // y = -0.5f * height ÀÎ Á¡µé  
     Vector3 leftBottom = Vector3(-0.5f * width, 0.0f , - 0.5f * height);
 
     for (int j = 0; j <= numStacks; j++) {
         Vector3 stackStartPoint = Vector3::Transform(
             leftBottom, Matrix::CreateTranslation(Vector3(0.0f, 0.0f, dz * j)));
-
-         cout << "x: " << stackStartPoint.x << ", y: " << stackStartPoint.y
-              << ", z: " << stackStartPoint.z << "\n\n";
 
         for (int i = 0; i <= numSlices; i++) {
             Vertex v;
@@ -221,6 +217,9 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
             v.position = Vector3::Transform(
                 stackStartPoint,
                 Matrix::CreateTranslation(Vector3(dx * i, 0.0f, 0.0f)));
+
+            /*cout << "x: " << v.position.x << ", y: " << v.position.y
+                 << ", z: " << v.position.z << "\n\n";*/
             //v.position.z = sin(i * dx * 5.0f) * 0.1f;
             v.normal = Vector3(0.0f, 1.0f, 0.0f);
             v.texcoord =
@@ -234,6 +233,7 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
     // ÀÎµ¦½º Ãß°¡
     for (int j = 0; j < numStacks; j++) {
         const int offset = (numSlices + 1) * j;
+        cout << "index ¿Ö ÀÌ·³: " << offset << "\n";
         for (int i = 0; i < numSlices; i++) {
             indices.push_back(offset + i);
             indices.push_back(offset + i + numSlices + 1);

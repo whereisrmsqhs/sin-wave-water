@@ -106,7 +106,7 @@ PixelShaderInput main(VertexShaderInput input)
     output.texcoord = input.texcoord;
     output.color = float3(0.0, 0.0, 0.0); // 다른 쉐이더에서 사용
     
-    float4 normal = float4(float3(-dx, 1, -dz), 0.0f);
+    float4 normal = float4(input.normalModel, 0.0f);
     output.normalWorld = mul(normal, invTranspose).xyz;
     output.normalWorld = normalize(output.normalWorld);
 

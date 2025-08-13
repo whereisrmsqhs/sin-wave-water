@@ -6,8 +6,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#include <dxgi.h>    // DXGIFactory
-#include <dxgi1_4.h> // DXGIFactory4
+#include <directxtk/DDSTextureLoader.h> // 큐브맵 읽을 때 필요
+#include <dxgi.h>                       // DXGIFactory
+#include <dxgi1_4.h>                    // DXGIFactory4
 
 // imgui_impl_win32.cpp에 정의된 메시지 처리 함수에 대한 전방 선언
 // VCPKG를 통해 IMGUI를 사용할 경우 빨간줄로 경고가 뜰 수 있음
@@ -19,6 +20,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd,
 namespace hlab {
 
 using namespace std;
+using namespace DirectX;
 
 // RegisterClassEx()에서 멤버 함수를 직접 등록할 수가 없기 때문에
 // 클래스의 멤버 함수에서 간접적으로 메시지를 처리할 수 있도록 도와줍니다.
@@ -77,12 +79,12 @@ int AppBase::Run() {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         } else {
-            
+
             ImGui_ImplDX11_NewFrame(); // GUI 프레임 시작
             ImGui_ImplWin32_NewFrame();
 
             ImGui::NewFrame(); // 어떤 것들을 렌더링 할지 기록 시작
-            
+
             if (showGui) {
                 ImGui::Begin("Scene Control");
 
@@ -97,7 +99,7 @@ int AppBase::Run() {
 
                 m_guiWidth = int(ImGui::GetWindowWidth());
 
-                ImGui::End();            
+                ImGui::End();
             }
 
             ImGui::Render(); // 렌더링할 것들 기록 끝
@@ -149,7 +151,7 @@ LRESULT AppBase::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             m_guiWidth = 0;
 
             m_renderTargetView.Reset();
-            m_swapChain->ResizeBuffers(0, // 현재 개수 유지
+            m_swapChain->ResizeBuffers(0,                    // 현재 개수 유지
                                        (UINT)LOWORD(lParam), // 해상도 변경
                                        (UINT)HIWORD(lParam),
                                        DXGI_FORMAT_UNKNOWN, // 현재 포맷 유지
@@ -221,8 +223,8 @@ bool AppBase::InitMainWindow() {
     // 윈도우를 만들때 위에서 계산한 wr 사용
     m_mainWindow = CreateWindow(wc.lpszClassName, L"HongLabGraphics Example",
                                 WS_OVERLAPPEDWINDOW,
-                                100, // 윈도우 좌측 상단의 x 좌표
-                                100, // 윈도우 좌측 상단의 y 좌표
+                                100,                // 윈도우 좌측 상단의 x 좌표
+                                100,                // 윈도우 좌측 상단의 y 좌표
                                 wr.right - wr.left, // 윈도우 가로 방향 해상도
                                 wr.bottom - wr.top, // 윈도우 세로 방향 해상도
                                 NULL, NULL, wc.hInstance, NULL);
@@ -620,14 +622,14 @@ void AppBase::CreatePixelShader(const wstring &filename,
                                 &pixelShader);
 }
 
-void AppBase::CreateIndexBuffer(const std::vector<uint16_t> &indices,
+void AppBase::CreateIndexBuffer(const std::vector<uint32_t> &indices,
                                 ComPtr<ID3D11Buffer> &m_indexBuffer) {
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // 초기화 후 변경X
-    bufferDesc.ByteWidth = UINT(sizeof(uint16_t) * indices.size());
+    bufferDesc.ByteWidth = UINT(sizeof(uint32_t) * indices.size());
     bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bufferDesc.CPUAccessFlags = 0; // 0 if no CPU access is necessary.
-    bufferDesc.StructureByteStride = sizeof(uint16_t);
+    bufferDesc.StructureByteStride = sizeof(uint32_t);
 
     D3D11_SUBRESOURCE_DATA indexBufferData = {0};
     indexBufferData.pSysMem = indices.data();
@@ -651,7 +653,7 @@ void AppBase::CreateTexture(
 
     // 4채널로 만들어서 복사
     std::vector<uint8_t> image;
-    image.resize(width * height * 4); 
+    image.resize(width * height * 4);
     for (size_t i = 0; i < width * height; i++) {
         for (size_t c = 0; c < 3; c++) {
             image[4 * i + c] = img[i * channels + c];
@@ -678,6 +680,25 @@ void AppBase::CreateTexture(
     m_device->CreateTexture2D(&txtDesc, &InitData, texture.GetAddressOf());
     m_device->CreateShaderResourceView(texture.Get(), nullptr,
                                        textureResourceView.GetAddressOf());
+}
+
+// dds파일을 읽어들이고 초기화한다.
+void AppBase::CreateCubemapTexture(
+    const wchar_t *filename,
+    ComPtr<ID3D11ShaderResourceView> &textureResourceView) {
+
+    ComPtr<ID3D11Texture2D> texture;
+
+    // DDS파일에서 큐브맵 텍스처를 읽어서 GPU메모리에 올리고, 그걸 셰이더에서 쓸 수 있도록 SRV까지 생성해준다.
+    auto hr = CreateDDSTextureFromFileEx(
+        m_device.Get(), filename, 0, D3D11_USAGE_DEFAULT,
+        D3D11_BIND_SHADER_RESOURCE, 0, D3D11_RESOURCE_MISC_TEXTURECUBE,
+        DDS_LOADER_FLAGS(false), (ID3D11Resource **)texture.GetAddressOf(),
+        textureResourceView.GetAddressOf(), nullptr);
+    
+    if (FAILED(hr)) {
+        std::cout << "CreateDDSTextureFromFileEx() failed" << std::endl;
+    }
 }
 
 } // namespace hlab

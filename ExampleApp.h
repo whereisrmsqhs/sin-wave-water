@@ -7,6 +7,7 @@
 #include "AppBase.h"
 #include "GeometryGenerator.h"
 #include "Mesh.h"
+#include "CubeMapping.h"
 
 #define MAX_WAVES 20
 
@@ -17,23 +18,13 @@ using DirectX::SimpleMath::Vector2;
 using DirectX::SimpleMath::Vector3;
 using DirectX::SimpleMath::Vector4;
 
-// 재질
-struct Material {
-    Vector3 ambient = Vector3(0.1f);  // 12
-    float shininess = 3.86f;           // 4
-    Vector3 diffuse = Vector3(0.5f);  // 12
-    float dummy1;                     // 4
-    Vector3 specular = Vector3(0.5f); // 12
-    float dummy2;                     // 4
-};
-
 // 조명
 struct Light {
     Vector3 strength = Vector3(0.5f);              // 12
     float fallOffStart = 0.0f;                     // 4
     Vector3 direction = Vector3(1.0f,-1.0f, 1.0f); // 12
     float fallOffEnd = 10.0f;                      // 4
-    Vector3 position = Vector3(0.0f, 2.0f, 0.0f); // 12
+    Vector3 position = Vector3(0.0f, -2.0f, 0.0f); // 12
     float spotPower = 1.0f;                        // 4
 };
 
@@ -94,6 +85,7 @@ class ExampleApp : public AppBase {
     virtual void Render() override;
 
     void UpdateTimeBuffer(float timeInSeconds);
+    void InitializeCubeMapping();
 
   protected:
     ComPtr<ID3D11VertexShader> m_basicVertexShader;
@@ -148,5 +140,7 @@ class ExampleApp : public AppBase {
 
     ComPtr<ID3D11Buffer> m_waveConstantBuffer;
     WaveBuffer waveData = {};
+
+    CubeMapping m_cubeMapping;
 };
 } // namespace hlab

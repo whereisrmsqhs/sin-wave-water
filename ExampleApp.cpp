@@ -1,12 +1,14 @@
 ﻿#include "ExampleApp.h"
 
+#include <directxtk/DDSTextureLoader.h> // 큐브맵 읽을 때 필요
 #include <random>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
-#include <string>
 
 #include "GeometryGenerator.h"
+#include "MeshData.h"
 
 namespace hlab {
 
@@ -22,10 +24,71 @@ float RandomFloat(std::pair<float, float> range) {
 
 ExampleApp::ExampleApp() : AppBase(), m_BasicPixelConstantBufferData() {}
 
+void ExampleApp::InitializeCubeMapping() {
+    // 일단 dds파일 각각 diffuse, specular를 가지고 온다.
+    auto skyBoxDiffuseFilename = L"diffusion.dds";
+    auto skyBoxSpecularFilename = L"skybox2.dds";
+
+    CreateCubemapTexture(skyBoxDiffuseFilename, m_cubeMapping.diffuseResView);
+    CreateCubemapTexture(skyBoxSpecularFilename, m_cubeMapping.specularResView);
+
+    m_cubeMapping.cubeMesh = std::make_shared<Mesh>();
+
+    m_BasicVertexConstantBufferData.model = Matrix();
+    m_BasicVertexConstantBufferData.view = Matrix();
+    m_BasicVertexConstantBufferData.projection = Matrix();
+    ComPtr<ID3D11Buffer> vertexConstantBuffer;
+    ComPtr<ID3D11Buffer> pixelConstantBuffer;
+    AppBase::CreateConstantBuffer(m_BasicVertexConstantBufferData,
+                                  m_cubeMapping.cubeMesh->vertexConstantBuffer);
+
+    MeshData cubeMeshData = GeometryGenerator::MakeBox(20.0f);
+    std::reverse(cubeMeshData.indices.begin(), cubeMeshData.indices.end());
+
+    AppBase::CreateVertexBuffer(cubeMeshData.vertices,
+                                m_cubeMapping.cubeMesh->vertexBuffer);
+    m_cubeMapping.cubeMesh->m_indexCount = UINT(cubeMeshData.indices.size());
+    AppBase::CreateIndexBuffer(cubeMeshData.indices,
+                               m_cubeMapping.cubeMesh->indexBuffer);
+
+    vector<D3D11_INPUT_ELEMENT_DESC> basicInputElements = {
+        {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+        {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 + 4 * 3,
+         D3D11_INPUT_PER_VERTEX_DATA, 0},
+    };
+
+    AppBase::CreateVertexShaderAndInputLayout(
+        L"CubeMappingVertexShader.hlsl", basicInputElements,
+        m_cubeMapping.vertexShader, m_cubeMapping.inputLayout);
+
+    AppBase::CreatePixelShader(L"CubeMappingPixelShader.hlsl",
+                               m_cubeMapping.pixelShader);
+}
+
+void ExampleApp::UpdateTimeBuffer(float timeInSeconds) {
+    D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+    m_context->Map(m_timeBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0,
+                   &mappedResource);
+
+    auto *dataPtr = reinterpret_cast<TimeBufferType *>(mappedResource.pData);
+    dataPtr->time = timeInSeconds;
+
+    m_context->Unmap(m_timeBuffer.Get(), 0);
+
+    ID3D11Buffer *bufferArray[] = {m_timeBuffer.Get()};
+    m_context->VSSetConstantBuffers(1, 1, bufferArray);
+}
+
 bool ExampleApp::Initialize() {
 
     if (!AppBase::Initialize())
         return false;
+
+    // 큐브 mapping 초기화
+    InitializeCubeMapping();
 
     // 지구 텍스춰 출처
     // https://stackoverflow.com/questions/31799670/applying-map-of-the-earth-texture-a-sphere
@@ -47,13 +110,13 @@ bool ExampleApp::Initialize() {
     m_device->CreateSamplerState(&sampDesc, m_samplerState.GetAddressOf());
 
     // Geometry 정의
-    MeshData meshData = GeometryGenerator::MakeGrid(5.0f, 3.0f, 80, 60);
+    MeshData meshData = GeometryGenerator::MakeGrid(4.0f, 4.0f, 4, 4);
 
     m_mesh = std::make_shared<Mesh>();
-
-    AppBase::CreateVertexBuffer(meshData.vertices, m_mesh->m_vertexBuffer);
+     
+    AppBase::CreateVertexBuffer(meshData.vertices, m_mesh->vertexBuffer);
     m_mesh->m_indexCount = UINT(meshData.indices.size());
-    AppBase::CreateIndexBuffer(meshData.indices, m_mesh->m_indexBuffer);
+    AppBase::CreateIndexBuffer(meshData.indices, m_mesh->indexBuffer);
 
     // ConstantBuffer 만들기
     m_BasicVertexConstantBufferData.model = Matrix();
@@ -61,13 +124,12 @@ bool ExampleApp::Initialize() {
     m_BasicVertexConstantBufferData.projection = Matrix();
 
     AppBase::CreateConstantBuffer(m_BasicVertexConstantBufferData,
-                                  m_mesh->m_vertexConstantBuffer);
+                                  m_mesh->vertexConstantBuffer);
 
     AppBase::CreateConstantBuffer(m_BasicPixelConstantBufferData,
-                                  m_mesh->m_pixelConstantBuffer);
+                                  m_mesh->pixelConstantBuffer);
 
-    // 내가 추가하는 time값 버퍼 
-
+    // 내가 추가하는 time값 버퍼
     D3D11_BUFFER_DESC timeBufferDesc = {};
     timeBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
     timeBufferDesc.ByteWidth = sizeof(TimeBufferType);
@@ -112,7 +174,7 @@ bool ExampleApp::Initialize() {
     m_normalLines = std::make_shared<Mesh>();
 
     std::vector<Vertex> normalVertices;
-    std::vector<uint16_t> normalIndices;
+    std::vector<uint32_t> normalIndices;
     for (size_t i = 0; i < meshData.vertices.size(); i++) {
 
         auto v = meshData.vertices[i];
@@ -127,11 +189,11 @@ bool ExampleApp::Initialize() {
         normalIndices.push_back(uint16_t(2 * i + 1));
     }
 
-    AppBase::CreateVertexBuffer(normalVertices, m_normalLines->m_vertexBuffer);
+    AppBase::CreateVertexBuffer(normalVertices, m_normalLines->vertexBuffer);
     m_normalLines->m_indexCount = UINT(normalIndices.size());
-    AppBase::CreateIndexBuffer(normalIndices, m_normalLines->m_indexBuffer);
+    AppBase::CreateIndexBuffer(normalIndices, m_normalLines->indexBuffer);
     AppBase::CreateConstantBuffer(m_normalVertexConstantBufferData,
-                                  m_normalLines->m_vertexConstantBuffer);
+                                  m_normalLines->vertexConstantBuffer);
 
     AppBase::CreateVertexShaderAndInputLayout(
         L"NormalVertexShader.hlsl", basicInputElements, m_normalVertexShader,
@@ -144,26 +206,11 @@ bool ExampleApp::Initialize() {
 
     float amplitudeFBM = 0.82f;
     for (int i = 0; i < MAX_WAVES; i++) {
-        waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)),
-                             1.0f,
+        waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)), 1.0f,
                              RandomFloat(speedRange), 0.0f};
     };
 
     return true;
-}
-
-void ExampleApp::UpdateTimeBuffer(float timeInSeconds) {
-    D3D11_MAPPED_SUBRESOURCE mappedResource = {};
-    m_context->Map(m_timeBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0,
-                   &mappedResource);
-
-    auto *dataPtr = reinterpret_cast<TimeBufferType *>(mappedResource.pData);
-    dataPtr->time = timeInSeconds;
-
-    m_context->Unmap(m_timeBuffer.Get(), 0);
-
-    ID3D11Buffer *bufferArray[] = {m_timeBuffer.Get()};
-    m_context->VSSetConstantBuffers(1, 1, bufferArray);
 }
 
 void ExampleApp::Update(float dt) {
@@ -217,7 +264,7 @@ void ExampleApp::Update(float dt) {
 
     // Constant를 CPU에서 GPU로 복사
     AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
-                          m_mesh->m_vertexConstantBuffer);
+                          m_mesh->vertexConstantBuffer);
 
     m_BasicPixelConstantBufferData.material.diffuse =
         Vector3(m_materialDiffuse);
@@ -235,7 +282,18 @@ void ExampleApp::Update(float dt) {
     }
 
     AppBase::UpdateBuffer(m_BasicPixelConstantBufferData,
-                          m_mesh->m_pixelConstantBuffer);
+                          m_mesh->pixelConstantBuffer);
+
+    // 큐브 맵 MVP 설정
+    m_BasicVertexConstantBufferData.model = Matrix();
+
+    AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
+                          m_cubeMapping.cubeMesh->vertexConstantBuffer);
+
+    m_BasicPixelConstantBufferData.material.diffuse =
+        Vector3(m_materialDiffuse);
+    m_BasicPixelConstantBufferData.material.specular =
+        Vector3(m_materialSpecular);
 
     // 노멀 벡터 그리기
     if (m_drawNormals && m_drawNormalsDirtyFlag) {
@@ -250,7 +308,7 @@ void ExampleApp::Update(float dt) {
         //     m_BasicVertexConstantBufferData.invTranspose;
 
         AppBase::UpdateBuffer(m_normalVertexConstantBufferData,
-                              m_normalLines->m_vertexConstantBuffer);
+                              m_normalLines->vertexConstantBuffer);
 
         m_drawNormalsDirtyFlag = false;
     }
@@ -277,15 +335,16 @@ void ExampleApp::Render() {
 
     m_context->VSSetShader(m_basicVertexShader.Get(), 0, 0);
     m_context->VSSetConstantBuffers(
-        0, 1, m_mesh->m_vertexConstantBuffer.GetAddressOf());
+        0, 1, m_mesh->vertexConstantBuffer.GetAddressOf());
 
-    ID3D11ShaderResourceView *pixelResources[2] = {
-        m_textureResourceView.Get(), m_textureResourceView2.Get()};
-    m_context->PSSetShaderResources(0, 2, pixelResources);
+    ID3D11ShaderResourceView *pixelResources[3] = {
+        m_textureResourceView.Get(), m_cubeMapping.diffuseResView.Get(),
+        m_cubeMapping.specularResView.Get()};
+    m_context->PSSetShaderResources(0, 3, pixelResources);
     m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
     m_context->PSSetConstantBuffers(
-        0, 1, m_mesh->m_pixelConstantBuffer.GetAddressOf());
+        0, 1, m_mesh->pixelConstantBuffer.GetAddressOf());
     m_context->PSSetShader(m_basicPixelShader.Get(), 0, 0);
 
     if (m_drawAsWire) {
@@ -308,27 +367,47 @@ void ExampleApp::Render() {
     UINT stride = sizeof(Vertex);
     UINT offset = 0;
     m_context->IASetInputLayout(m_basicInputLayout.Get());
-    m_context->IASetVertexBuffers(0, 1, m_mesh->m_vertexBuffer.GetAddressOf(),
+    m_context->IASetVertexBuffers(0, 1, m_mesh->vertexBuffer.GetAddressOf(),
                                   &stride, &offset);
-    m_context->IASetIndexBuffer(m_mesh->m_indexBuffer.Get(),
+    m_context->IASetIndexBuffer(m_mesh->indexBuffer.Get(),
                                 DXGI_FORMAT_R16_UINT, 0);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->DrawIndexed(m_mesh->m_indexCount, 0, 0);
+
+    // 큐브 매핑 Render()
+    m_context->IASetInputLayout(m_cubeMapping.inputLayout.Get());
+    m_context->IASetVertexBuffers(
+        0, 1, m_cubeMapping.cubeMesh->vertexBuffer.GetAddressOf(), &stride,
+        &offset);
+    m_context->IASetIndexBuffer(m_cubeMapping.cubeMesh->indexBuffer.Get(),
+                                DXGI_FORMAT_R32_UINT, 0);
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    m_context->VSSetShader(m_cubeMapping.vertexShader.Get(), 0, 0);
+    m_context->VSSetConstantBuffers(
+        0, 1, m_cubeMapping.cubeMesh->vertexConstantBuffer.GetAddressOf());
+    ID3D11ShaderResourceView *views[2] = {m_cubeMapping.diffuseResView.Get(),
+                                          m_cubeMapping.specularResView.Get()};
+    m_context->PSSetShaderResources(0, 2, views);
+    m_context->PSSetShader(m_cubeMapping.pixelShader.Get(), 0, 0);
+    m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+
+    m_context->DrawIndexed(m_cubeMapping.cubeMesh->m_indexCount, 0, 0);
 
     // 노멀 벡터 그리기
     if (m_drawNormals) {
         m_context->VSSetShader(m_normalVertexShader.Get(), 0, 0);
 
-        ID3D11Buffer *pptr[2] = {m_mesh->m_vertexConstantBuffer.Get(),
-                                 m_normalLines->m_vertexConstantBuffer.Get()};
+        ID3D11Buffer *pptr[2] = {m_mesh->vertexConstantBuffer.Get(),
+                                 m_normalLines->vertexConstantBuffer.Get()};
         m_context->VSSetConstantBuffers(0, 2, pptr);
 
         m_context->PSSetShader(m_normalPixelShader.Get(), 0, 0);
         // m_context->IASetInputLayout(m_basicInputLayout.Get());
         m_context->IASetVertexBuffers(
-            0, 1, m_normalLines->m_vertexBuffer.GetAddressOf(), &stride,
+            0, 1, m_normalLines->vertexBuffer.GetAddressOf(), &stride,
             &offset);
-        m_context->IASetIndexBuffer(m_normalLines->m_indexBuffer.Get(),
+        m_context->IASetIndexBuffer(m_normalLines->indexBuffer.Get(),
                                     DXGI_FORMAT_R16_UINT, 0);
         m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
         m_context->DrawIndexed(m_normalLines->m_indexCount, 0, 0);
@@ -352,7 +431,7 @@ void ExampleApp::UpdateGUI() {
     ImGui::SliderFloat("m_viewRot", &m_viewRot, -3.14f, 3.14f);
 
     ImGui::SliderFloat("Material Shininess",
-                       &m_BasicPixelConstantBufferData.material.shininess, 1.0f,
+                       &m_BasicPixelConstantBufferData.material.shiness, 1.0f,
                        256.0f);
 
     if (ImGui::RadioButton("Directional Light", m_lightType == 0)) {
@@ -382,7 +461,7 @@ void ExampleApp::UpdateGUI() {
     ImGui::SliderFloat("Light spotPower", &m_lightFromGUI.spotPower, 1.0f,
                        512.0f);
 
-for (int i = 0; i < MAX_WAVES; ++i) {
+    for (int i = 0; i < MAX_WAVES; ++i) {
         ImGui::SliderFloat(("Amplitude " + std::to_string(i)).c_str(),
                            &waveData.waves[i].amplitude, 0.0f, 1.0f);
         ImGui::SliderFloat(("WaveLength " + std::to_string(i)).c_str(),

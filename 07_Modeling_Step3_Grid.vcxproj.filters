@@ -41,6 +41,18 @@
     <ClInclude Include="Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
@@ -62,11 +74,28 @@
     <Image Include="korea.jpg">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\..\Standard-Cube-Map\output_iem_diffuse.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\Standard-Cube-Map\output_pmrem_specular.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\Standard-Cube-Map\diffusion.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\Standard-Cube-Map\specular.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="..\..\Standard-Cube-Map\skybox2.dds">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPixelShader.hlsl" />
     <FxCompile Include="BasicVertexShader.hlsl" />
     <FxCompile Include="NormalPixelShader.hlsl" />
     <FxCompile Include="NormalVertexShader.hlsl" />
+    <FxCompile Include="CubeMappingVertexShader.hlsl" />
+    <FxCompile Include="CubeMappingPixelShader.hlsl" />
   </ItemGroup>
 </Project>
