@@ -22,7 +22,7 @@ float RandomFloat(std::pair<float, float> range) {
     return dist(gen);
 }
 
-ExampleApp::ExampleApp() : AppBase(), m_BasicPixelConstantBufferData() {}
+ExampleApp::ExampleApp() : AppBase(), m_BasicPixelConstantBufferData() {} 
 
 void ExampleApp::InitializeCubeMapping() {
     // 일단 dds파일 각각 diffuse, specular를 가지고 온다.
@@ -370,7 +370,7 @@ void ExampleApp::Render() {
     m_context->IASetVertexBuffers(0, 1, m_mesh->vertexBuffer.GetAddressOf(),
                                   &stride, &offset);
     m_context->IASetIndexBuffer(m_mesh->indexBuffer.Get(),
-                                DXGI_FORMAT_R16_UINT, 0);
+                                DXGI_FORMAT_R32_UINT, 0);
     m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     m_context->DrawIndexed(m_mesh->m_indexCount, 0, 0);
 
@@ -408,7 +408,7 @@ void ExampleApp::Render() {
             0, 1, m_normalLines->vertexBuffer.GetAddressOf(), &stride,
             &offset);
         m_context->IASetIndexBuffer(m_normalLines->indexBuffer.Get(),
-                                    DXGI_FORMAT_R16_UINT, 0);
+                                    DXGI_FORMAT_R32_UINT, 0);
         m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
         m_context->DrawIndexed(m_normalLines->m_indexCount, 0, 0);
     }

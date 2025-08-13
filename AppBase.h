@@ -56,7 +56,7 @@ class AppBase {
     void CreatePixelShader(const wstring &filename,
                            ComPtr<ID3D11PixelShader> &pixelShader);
     void CreateIndexBuffer(const vector<uint32_t> &indices,
-                           ComPtr<ID3D11Buffer> &m_indexBuffer);
+                           ComPtr<ID3D11Buffer> &indexBuffer);
 
     template <typename T_VERTEX>
     void CreateVertexBuffer(const vector<T_VERTEX> &vertices,

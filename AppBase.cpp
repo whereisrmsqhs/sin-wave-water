@@ -623,7 +623,7 @@ void AppBase::CreatePixelShader(const wstring &filename,
 }
 
 void AppBase::CreateIndexBuffer(const std::vector<uint32_t> &indices,
-                                ComPtr<ID3D11Buffer> &m_indexBuffer) {
+                                ComPtr<ID3D11Buffer> &indexBuffer) {
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // 초기화 후 변경X
     bufferDesc.ByteWidth = UINT(sizeof(uint32_t) * indices.size());
@@ -637,7 +637,7 @@ void AppBase::CreateIndexBuffer(const std::vector<uint32_t> &indices,
     indexBufferData.SysMemSlicePitch = 0;
 
     m_device->CreateBuffer(&bufferDesc, &indexBufferData,
-                           m_indexBuffer.GetAddressOf());
+                           indexBuffer.GetAddressOf());
 }
 
 void AppBase::CreateTexture(

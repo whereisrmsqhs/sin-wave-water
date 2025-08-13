@@ -15,7 +15,7 @@ int main() {
     if (!exampleApp.Initialize()) {
         cout << "Initialization failed." << endl;
         return -1;
-    }
+    } 
 
     return exampleApp.Run();
 }

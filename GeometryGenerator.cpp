@@ -233,15 +233,20 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
     // 인덱스 추가
     for (int j = 0; j < numStacks; j++) {
         const int offset = (numSlices + 1) * j;
-        cout << "index 왜 이럼: " << offset << "\n";
         for (int i = 0; i < numSlices; i++) {
             indices.push_back(offset + i);
+            cout << offset + i << ", ";
             indices.push_back(offset + i + numSlices + 1);
+            cout << offset + i + numSlices + 1 << ", ";
             indices.push_back(offset + i + numSlices + 2);
+            cout << offset + i + numSlices + 2 << "; ";
 
             indices.push_back(offset + i);
+            cout << offset + i << ", ";
             indices.push_back(offset + i + numSlices + 2);
+            cout << offset + i + numSlices + 2 << ", ";
             indices.push_back(offset + i + 1);
+            cout << offset + i + 1 << ";\n";
         }
     }
 
