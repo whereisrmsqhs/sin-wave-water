@@ -17,7 +17,7 @@ float4 main(PixelShaderInput input) : SV_TARGET
 {
     float3 toEye = normalize(eyeWorld - input.posWorld);
     float3 color = float3(0.0, 0.2, 0.1);
-    // pink
+    // Pink
     // float3 color = float3(0.5, 0.2, 0.2);
     
     int i = 0;
@@ -39,6 +39,12 @@ float4 main(PixelShaderInput input) : SV_TARGET
     {
         color += ComputeSpotLight(light[i], material, input.posWorld, input.normalWorld, toEye);
     }
+    
+    // Calculate distance fog.
+    float depth = length(input.posWorld);
+    float density = 0.03;
+    float fogColor = float3(0.6, 0.6, 0.6);
+    float fogFactor = exp(-pow(depth * density, 2));
 
     float4 diffuse = g_diffuseCube.Sample(g_sampler, input.normalWorld);
     diffuse.xyz *= material.diffuse;
@@ -47,8 +53,10 @@ float4 main(PixelShaderInput input) : SV_TARGET
     
     // return float4(color, 1.0) + specular;
     // return float4(color, 1.0);
+ 
+    float3 finalColor = lerp(fogColor, color, fogFactor);
     
     return useTexture
-         ? float4(color, 1.0) * g_texture0.Sample(g_sampler, input.texcoord)
-         : float4(color, 1.0);
+         ? float4(finalColor, 1.0) * g_texture0.Sample(g_sampler, input.texcoord)
+         : float4(finalColor, 1.0);
 }

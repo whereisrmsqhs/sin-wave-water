@@ -78,7 +78,7 @@ PixelShaderInput main(VertexShaderInput input)
     
         modifiedPos.y += waveoffset;
         
-        amplitude *= 0.88;
+        amplitude *= 0.9;
         waveLegnth *= 1.23;
     }
     
