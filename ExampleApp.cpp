@@ -25,9 +25,10 @@ float RandomFloat(std::pair<float, float> range) {
 ExampleApp::ExampleApp() : AppBase(), m_BasicPixelConstantBufferData() {} 
 
 void ExampleApp::InitializeCubeMapping() {
-    // 일단 dds파일 각각 diffuse, specular를 가지고 온다.
+    // 일단 dds파일 각각 diffuse, specular를 가지고 온다. 
     auto skyBoxDiffuseFilename = L"diffusion.dds";
     auto skyBoxSpecularFilename = L"skybox2.dds";
+    //auto skyBoxSpecularFilename = L"specular.dds";
 
     CreateCubemapTexture(skyBoxDiffuseFilename, m_cubeMapping.diffuseResView);
     CreateCubemapTexture(skyBoxSpecularFilename, m_cubeMapping.specularResView);
@@ -88,7 +89,7 @@ bool ExampleApp::Initialize() {
         return false;
 
     // 큐브 mapping 초기화
-    InitializeCubeMapping();
+    // InitializeCubeMapping();
 
     // 지구 텍스춰 출처
     // https://stackoverflow.com/questions/31799670/applying-map-of-the-earth-texture-a-sphere
@@ -110,7 +111,7 @@ bool ExampleApp::Initialize() {
     m_device->CreateSamplerState(&sampDesc, m_samplerState.GetAddressOf());
 
     // Geometry 정의
-    MeshData meshData = GeometryGenerator::MakeGrid(4.0f, 4.0f, 4, 4);
+    MeshData meshData = GeometryGenerator::MakeGrid(160.0f, 90.0f, 900, 1600);
 
     m_mesh = std::make_shared<Mesh>();
      
@@ -200,14 +201,17 @@ bool ExampleApp::Initialize() {
         m_basicInputLayout);
     AppBase::CreatePixelShader(L"NormalPixelShader.hlsl", m_normalPixelShader);
 
-    std::pair<float, float> amplitudeRange = {0.05f, 0.1f};
-    std::pair<float, float> waveLengthRange = {0.5f, 1.0f};
-    std::pair<float, float> speedRange = {0.1f, 0.9f};
+    std::pair<float, float> xDirectionRange = {-10.0f, 10.0f};
+    std::pair<float, float> zDirectionRange = {-10.0f, 10.0f};
+    std::pair<float, float> speedRange = {1.0f, 2.0f};
 
     float amplitudeFBM = 0.82f;
     for (int i = 0; i < MAX_WAVES; i++) {
-        waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)), 1.0f,
-                             RandomFloat(speedRange), 0.0f};
+        //waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)), 1.0f,
+        //                     RandomFloat(speedRange), 0.0f};
+        waveData.waves[i] = {RandomFloat(xDirectionRange),
+                             RandomFloat(zDirectionRange),
+                             RandomFloat(speedRange), 1.0f};
     };
 
     return true;
@@ -285,15 +289,15 @@ void ExampleApp::Update(float dt) {
                           m_mesh->pixelConstantBuffer);
 
     // 큐브 맵 MVP 설정
-    m_BasicVertexConstantBufferData.model = Matrix();
+    //m_BasicVertexConstantBufferData.model = Matrix();
 
-    AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
-                          m_cubeMapping.cubeMesh->vertexConstantBuffer);
+    //AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
+    //                      m_cubeMapping.cubeMesh->vertexConstantBuffer);
 
-    m_BasicPixelConstantBufferData.material.diffuse =
-        Vector3(m_materialDiffuse);
-    m_BasicPixelConstantBufferData.material.specular =
-        Vector3(m_materialSpecular);
+    //m_BasicPixelConstantBufferData.material.diffuse =
+    //    Vector3(m_materialDiffuse);
+    //m_BasicPixelConstantBufferData.material.specular =
+    //    Vector3(m_materialSpecular);
 
     // 노멀 벡터 그리기
     if (m_drawNormals && m_drawNormalsDirtyFlag) {
@@ -375,24 +379,24 @@ void ExampleApp::Render() {
     m_context->DrawIndexed(m_mesh->m_indexCount, 0, 0);
 
     // 큐브 매핑 Render()
-    m_context->IASetInputLayout(m_cubeMapping.inputLayout.Get());
-    m_context->IASetVertexBuffers(
-        0, 1, m_cubeMapping.cubeMesh->vertexBuffer.GetAddressOf(), &stride,
-        &offset);
-    m_context->IASetIndexBuffer(m_cubeMapping.cubeMesh->indexBuffer.Get(),
-                                DXGI_FORMAT_R32_UINT, 0);
-    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    //m_context->IASetInputLayout(m_cubeMapping.inputLayout.Get());
+    //m_context->IASetVertexBuffers(
+    //    0, 1, m_cubeMapping.cubeMesh->vertexBuffer.GetAddressOf(), &stride,
+    //    &offset);
+    //m_context->IASetIndexBuffer(m_cubeMapping.cubeMesh->indexBuffer.Get(),
+    //                            DXGI_FORMAT_R32_UINT, 0);
+    //m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    m_context->VSSetShader(m_cubeMapping.vertexShader.Get(), 0, 0);
-    m_context->VSSetConstantBuffers(
-        0, 1, m_cubeMapping.cubeMesh->vertexConstantBuffer.GetAddressOf());
-    ID3D11ShaderResourceView *views[2] = {m_cubeMapping.diffuseResView.Get(),
-                                          m_cubeMapping.specularResView.Get()};
-    m_context->PSSetShaderResources(0, 2, views);
-    m_context->PSSetShader(m_cubeMapping.pixelShader.Get(), 0, 0);
-    m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+    //m_context->VSSetShader(m_cubeMapping.vertexShader.Get(), 0, 0);
+    //m_context->VSSetConstantBuffers(
+    //    0, 1, m_cubeMapping.cubeMesh->vertexConstantBuffer.GetAddressOf());
+    //ID3D11ShaderResourceView *views[2] = {m_cubeMapping.diffuseResView.Get(),
+    //                                      m_cubeMapping.specularResView.Get()};
+    //m_context->PSSetShaderResources(0, 2, views);
+    //m_context->PSSetShader(m_cubeMapping.pixelShader.Get(), 0, 0);
+    //m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-    m_context->DrawIndexed(m_cubeMapping.cubeMesh->m_indexCount, 0, 0);
+    //m_context->DrawIndexed(m_cubeMapping.cubeMesh->m_indexCount, 0, 0);
 
     // 노멀 벡터 그리기
     if (m_drawNormals) {
@@ -424,8 +428,8 @@ void ExampleApp::UpdateGUI() {
                            1.0f)) {
         m_drawNormalsDirtyFlag = true;
     }
-    ImGui::SliderFloat3("m_modelTranslation", &m_modelTranslation.x, -2.0f,
-                        2.0f);
+    ImGui::SliderFloat3("m_modelTranslation", &m_modelTranslation.x, -10.0f,
+                        10.0f);
     ImGui::SliderFloat3("m_modelRotation", &m_modelRotation.x, -3.14f, 3.14f);
     ImGui::SliderFloat3("m_modelScaling", &m_modelScaling.x, 0.1f, 2.0f);
     ImGui::SliderFloat("m_viewRot", &m_viewRot, -3.14f, 3.14f);
@@ -463,9 +467,9 @@ void ExampleApp::UpdateGUI() {
 
     for (int i = 0; i < MAX_WAVES; ++i) {
         ImGui::SliderFloat(("Amplitude " + std::to_string(i)).c_str(),
-                           &waveData.waves[i].amplitude, 0.0f, 1.0f);
+                           &waveData.waves[i].xDirection, -3.0f, 3.0f);
         ImGui::SliderFloat(("WaveLength " + std::to_string(i)).c_str(),
-                           &waveData.waves[i].waveLength, 0.1f, 5.0f);
+                           &waveData.waves[i].zDirection, -3.0f, 3.0f);
         ImGui::SliderFloat(("Speed " + std::to_string(i)).c_str(),
                            &waveData.waves[i].speed, 0.0f, 3.0f);
     }

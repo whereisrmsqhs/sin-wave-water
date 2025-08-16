@@ -211,7 +211,7 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
         Vector3 stackStartPoint = Vector3::Transform(
             leftBottom, Matrix::CreateTranslation(Vector3(0.0f, 0.0f, dz * j)));
 
-        for (int i = 0; i <= numSlices; i++) {
+        for (int i = 0; i <= numSlices; i++) { 
             Vertex v;
 
             v.position = Vector3::Transform(
@@ -235,18 +235,18 @@ MeshData GeometryGenerator::MakeGrid(const float width, const float height,
         const int offset = (numSlices + 1) * j;
         for (int i = 0; i < numSlices; i++) {
             indices.push_back(offset + i);
-            cout << offset + i << ", ";
+            //cout << offset + i << ", "; 
             indices.push_back(offset + i + numSlices + 1);
-            cout << offset + i + numSlices + 1 << ", ";
+            //cout << offset + i + numSlices + 1 << ", ";
             indices.push_back(offset + i + numSlices + 2);
-            cout << offset + i + numSlices + 2 << "; ";
+            //cout << offset + i + numSlices + 2 << "; ";
 
             indices.push_back(offset + i);
-            cout << offset + i << ", ";
+            //cout << offset + i << ", ";
             indices.push_back(offset + i + numSlices + 2);
-            cout << offset + i + numSlices + 2 << ", ";
+            //cout << offset + i + numSlices + 2 << ", ";
             indices.push_back(offset + i + 1);
-            cout << offset + i + 1 << ";\n";
+            //cout << offset + i + 1 << ";\n";
         }
     }
 

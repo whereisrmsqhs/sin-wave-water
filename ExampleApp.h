@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "CubeMapping.h"
 
-#define MAX_WAVES 20
+#define MAX_WAVES 24
 
 namespace hlab {
 
@@ -65,8 +65,8 @@ struct TimeBufferType {
 };
 
 struct Wave {
-    float amplitude;
-    float waveLength;
+    float xDirection;
+    float zDirection;
     float speed;
     float dummy;
 };
@@ -114,7 +114,7 @@ class ExampleApp : public AppBase {
     BasicPixelConstantBuffer m_BasicPixelConstantBufferData;
 
     bool m_usePerspectiveProjection = true;
-    Vector3 m_modelTranslation = Vector3(0.0f, 0.231f, 0.0f);
+    Vector3 m_modelTranslation = Vector3(0.0f, 0.231f, 15.0f);
     Vector3 m_modelRotation = Vector3(-0.286f, 0.163f, 0.0f);
     Vector3 m_modelScaling = Vector3(0.5f, 0.8f, 1.0f);
     float m_viewRot = 0.0f;

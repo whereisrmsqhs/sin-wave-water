@@ -16,7 +16,9 @@ cbuffer BasicPixelConstantBuffer : register(b0)
 float4 main(PixelShaderInput input) : SV_TARGET
 {
     float3 toEye = normalize(eyeWorld - input.posWorld);
-    float3 color = float3(0.0, 0.0, 0.0);
+    float3 color = float3(0.0, 0.2, 0.1);
+    // pink
+    // float3 color = float3(0.5, 0.2, 0.2);
     
     int i = 0;
 
@@ -43,9 +45,10 @@ float4 main(PixelShaderInput input) : SV_TARGET
     float4 specular = g_specularCube.Sample(g_sampler, reflect(-toEye, input.normalWorld));
     specular.xyz *= material.specular;
     
-    return float4(color, 1.0) + diffuse + specular;
+    // return float4(color, 1.0) + specular;
+    // return float4(color, 1.0);
     
-    // return useTexture
-       //  ? float4(color, 1.0) * g_texture0.Sample(g_sampler, input.texcoord)
-       //  : float4(color, 1.0);
+    return useTexture
+         ? float4(color, 1.0) * g_texture0.Sample(g_sampler, input.texcoord)
+         : float4(color, 1.0);
 }

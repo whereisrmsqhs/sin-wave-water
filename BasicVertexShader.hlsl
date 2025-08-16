@@ -1,6 +1,8 @@
-#include "Common.hlsli" // ½¦ÀÌ´õ¿¡¼­µµ include »ç¿ë °¡´É
+// safe header (ASCII only)
+#include "Common.hlsli"
 
-#define MAX_WAVES 20
+#define MAX_WAVES 24
+#define PI 3.1415926
 
 cbuffer BasicVertexConstantBuffer : register(b0)
 {
@@ -18,10 +20,10 @@ cbuffer TimeBuffer : register(b1)
 
 struct Wave
 {
-    float amplitude;
-    float waveLength;
+    float xDirection;
+    float zDirection;
     float speed;
-    float dummy; // padding ¸ÂÃß±â À§ÇØ ÇÊ¿ä
+    float dummy; // padding ë§ì¶”ê¸° ìœ„í•´ í•„ìš”
 };
 
 cbuffer WaveBuffer : register(b2)
@@ -29,87 +31,78 @@ cbuffer WaveBuffer : register(b2)
     Wave waves[MAX_WAVES];
 };
 
+float Hash(float2 p) {
+    return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
+}
+
 PixelShaderInput main(VertexShaderInput input)
 {
-    // ¸ğµ¨(Model) Çà·ÄÀº ¸ğµ¨ ÀÚ½ÅÀÇ ¿øÁ¡¿¡¼­ 
-    // ¿ùµå ÁÂÇ¥°è¿¡¼­ÀÇ À§Ä¡·Î º¯È¯À» ½ÃÄÑÁİ´Ï´Ù.
-    // ¸ğµ¨ ÁÂÇ¥°èÀÇ À§Ä¡ -> [¸ğµ¨ Çà·Ä °öÇÏ±â] -> ¿ùµå ÁÂÇ¥°èÀÇ À§Ä¡
-    // -> [ºä Çà·Ä °öÇÏ±â] -> ºä ÁÂÇ¥°èÀÇ À§Ä¡ -> [ÇÁ·ÎÁ§¼Ç Çà·Ä °öÇÏ±â]
-    // -> ½ºÅ©¸° ÁÂÇ¥°èÀÇ À§Ä¡
+    // ëª¨ë¸(Model) í–‰ë ¬ì€ ëª¨ë¸ ìì‹ ì˜ ì›ì ì—ì„œ 
+    // ì›”ë“œ ì¢Œí‘œê³„ì—ì„œì˜ ìœ„ì¹˜ë¡œ ë³€í™˜ì„ ì‹œì¼œì¤ë‹ˆë‹¤.
+    // ëª¨ë¸ ì¢Œí‘œê³„ì˜ ìœ„ì¹˜ -> [ëª¨ë¸ í–‰ë ¬ ê³±í•˜ê¸°] -> ì›”ë“œ ì¢Œí‘œê³„ì˜ ìœ„ì¹˜
+    // -> [ë·° í–‰ë ¬ ê³±í•˜ê¸°] -> ë·° ì¢Œí‘œê³„ì˜ ìœ„ì¹˜ -> [í”„ë¡œì ì…˜ í–‰ë ¬ ê³±í•˜ê¸°]
+    // -> ìŠ¤í¬ë¦° ì¢Œí‘œê³„ì˜ ìœ„ì¹˜
     
-    // ºä ÁÂÇ¥°è´Â NDCÀÌ±â ¶§¹®¿¡ ¿ùµå ÁÂÇ¥¸¦ ÀÌ¿ëÇØ¼­ Á¶¸í °è»ê
+    // ë·° ì¢Œí‘œê³„ëŠ” NDCì´ê¸° ë•Œë¬¸ì— ì›”ë“œ ì¢Œí‘œë¥¼ ì´ìš©í•´ì„œ ì¡°ëª… ê³„ì‚°
     
     float3 modifiedPos = input.posModel;
     
-    float waveOffset = 0.0f;
-    float dx = 0.0;
-    float dz = 0.0;
-
-    // zÃà¿¡ sin ±â¹İ º¯ÇüÀ» Ãß°¡ (x À§Ä¡¿Í ½Ã°£ ±â¹İ)
-    static const float2 dirs[MAX_WAVES] =
-    {
-        normalize(float2(1.0, 0.5)),
-        normalize(float2(-0.8, 0.3)),
-        normalize(float2(0.6, -0.9)),
-        normalize(float2(-0.2, -1.0)),
-        normalize(float2(0.3, 0.3)),
-        normalize(float2(1.0, 0.5)),
-        normalize(float2(-0.8, 0.3)),
-        normalize(float2(0.6, -0.9)),
-        normalize(float2(-0.2, -1.0)),
-        normalize(float2(0.3, 0.3)),
-        normalize(float2(1.0, 0.5)),
-        normalize(float2(-0.8, 0.3)),
-        normalize(float2(0.6, -0.9)),
-        normalize(float2(-0.2, -1.0)),
-        normalize(float2(0.3, 0.3)),
-        normalize(float2(1.0, 0.5)),
-        normalize(float2(-0.8, 0.3)),
-        normalize(float2(0.6, -0.9)),
-        normalize(float2(-0.2, -1.0)),
-        normalize(float2(0.3, 0.3)),
-    };
-
-    float frequencyFBM = 1.11;
+    float x = input.posModel.x;
+    float z = input.posModel.z;
     
+    float total_dy_dx = 0.0;
+    float total_dy_dz = 0.0;
+    
+    float amplitude = 0.09;
+    float waveLegnth = 2.0;
+    
+    float2 prevWave = float2(0, 0);
+    float weight = 1.0;
     for (int i = 0; i < MAX_WAVES; i++)
     {
-        float2 posXZ = float2(modifiedPos.x, modifiedPos.z);
-        float2 waveDir = dirs[i];
-        float2 wavePos = waveDir * time * waves[i].speed;
-
-        float2 relative = posXZ - wavePos;
-
-        float frequency = 2 / waves[i].waveLength * pow(frequencyFBM, i + 1);
-        float phase = dot(waveDir, relative) * frequency;
-
-        float sinPhase = sin(phase);
-        float cosPhase = cos(phase);
-
-        waveOffset += 0.08 * waves[i].amplitude * sinPhase;
-        dx += 0.1 * waves[i].amplitude * cosPhase * frequency * waveDir.x;
-        dz += 0.1 * waves[i].amplitude * cosPhase * frequency * waveDir.y;
+        float frequency = 1.0 * PI / waveLegnth;
+        float phase = waves[i].speed * frequency;
+        float arg = (dot(float2(x, z) + 0.5 * prevWave, normalize(float2(waves[i].xDirection, waves[i].zDirection)))) * frequency + time * phase;
+        // ìƒˆë¡œìš´ waveoffset í•¨ìˆ˜
+        float waveoffset = amplitude * (exp(sin(arg)) - 1) * weight;
+    
+        // ë¯¸ë¶„ê°’ ê³„ì‚°
+        float derivative_base = amplitude * exp(sin(arg)) * cos(arg) * frequency;
+        
+        float dy_dx = derivative_base * waves[i].xDirection;
+        float dy_dz = derivative_base * waves[i].zDirection;
+        
+        prevWave = float2(dy_dx, dy_dz);
+        total_dy_dx += dy_dx; // x ë°©í–¥ ì„±ë¶„
+        total_dy_dz += dy_dz; // z ë°©í–¥ ì„±ë¶„ (normalize(1,3)ì˜ z ì„±ë¶„)
+    
+        modifiedPos.y += waveoffset;
+        
+        amplitude *= 0.88;
+        waveLegnth *= 1.23;
     }
-    modifiedPos.y += waveOffset;
-
+    
+    float3 tangentX = float3(1, total_dy_dx, 0);
+    float3 tangentZ = float3(0, total_dy_dz, 1);
+    float4 normal = float4(normalize(input.normalModel + cross(tangentZ, tangentX)), 0.0);
+    // float4 normal = float4(cross(tangentZ, tangentX), 0.0);
+    
     float4 pos = float4(modifiedPos, 1.0f);
     pos = mul(pos, model);
     
     PixelShaderInput output;
     
-    output.posWorld = pos.xyz; // ¿ùµå À§Ä¡ µû·Î ÀúÀå
+    output.posWorld = pos.xyz; // ì›”ë“œ ìœ„ì¹˜ ë”°ë¡œ ì €ì¥
 
     pos = mul(pos, view);
     pos = mul(pos, projection);
 
     output.posProj = pos;
     output.texcoord = input.texcoord;
-    output.color = float3(0.0, 0.0, 0.0); // ´Ù¸¥ ½¦ÀÌ´õ¿¡¼­ »ç¿ë
+    output.color = float3(0.0, 0.0, 0.0); // ë‹¤ë¥¸ ì‰ì´ë”ì—ì„œ ì‚¬ìš©
     
-    float4 normal = float4(input.normalModel, 0.0f);
     output.normalWorld = mul(normal, invTranspose).xyz;
     output.normalWorld = normalize(output.normalWorld);
 
     return output;
-}
-;
+};
