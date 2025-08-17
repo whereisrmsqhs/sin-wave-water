@@ -35,53 +35,54 @@ void ExampleApp::InitializeCubeMapping() {
 
     m_cubeMapping.cubeMesh = std::make_shared<Mesh>();
 
-    m_BasicVertexConstantBufferData.model = Matrix();
-    m_BasicVertexConstantBufferData.view = Matrix();
+    m_BasicVertexConstantBufferData.model = Matrix(); 
+    m_BasicVertexConstantBufferData.view = Matrix(); 
     m_BasicVertexConstantBufferData.projection = Matrix();
     ComPtr<ID3D11Buffer> vertexConstantBuffer;
     ComPtr<ID3D11Buffer> pixelConstantBuffer;
     AppBase::CreateConstantBuffer(m_BasicVertexConstantBufferData,
                                   m_cubeMapping.cubeMesh->vertexConstantBuffer);
 
-    MeshData cubeMeshData = GeometryGenerator::MakeBox(20.0f);
+    MeshData cubeMeshData = GeometryGenerator::MakeBox(40.0f);
     std::reverse(cubeMeshData.indices.begin(), cubeMeshData.indices.end());
 
     AppBase::CreateVertexBuffer(cubeMeshData.vertices,
                                 m_cubeMapping.cubeMesh->vertexBuffer);
     m_cubeMapping.cubeMesh->m_indexCount = UINT(cubeMeshData.indices.size());
     AppBase::CreateIndexBuffer(cubeMeshData.indices,
-                               m_cubeMapping.cubeMesh->indexBuffer);
+                               m_cubeMapping.cubeMesh->indexBuffer); 
 
     vector<D3D11_INPUT_ELEMENT_DESC> basicInputElements = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
-         D3D11_INPUT_PER_VERTEX_DATA, 0},
+         D3D11_INPUT_PER_VERTEX_DATA, 0},  
         {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3,
-         D3D11_INPUT_PER_VERTEX_DATA, 0},
+         D3D11_INPUT_PER_VERTEX_DATA, 0}, 
         {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 + 4 * 3,
          D3D11_INPUT_PER_VERTEX_DATA, 0},
     };
 
-    AppBase::CreateVertexShaderAndInputLayout(
-        L"CubeMappingVertexShader.hlsl", basicInputElements,
+    AppBase::CreateVertexShaderAndInputLayout(  
+        L"CubeMappingVertexShader.hlsl", basicInputElements, 
         m_cubeMapping.vertexShader, m_cubeMapping.inputLayout);
-
+     
     AppBase::CreatePixelShader(L"CubeMappingPixelShader.hlsl",
-                               m_cubeMapping.pixelShader);
+                               m_cubeMapping.pixelShader); 
 }
 
 void ExampleApp::UpdateTimeBuffer(float timeInSeconds) {
     D3D11_MAPPED_SUBRESOURCE mappedResource = {};
     m_context->Map(m_timeBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0,
-                   &mappedResource);
+                   &mappedResource); 
 
-    auto *dataPtr = reinterpret_cast<TimeBufferType *>(mappedResource.pData);
-    dataPtr->time = timeInSeconds;
-
+    auto *dataPtr = reinterpret_cast<TimeBufferType *>(mappedResource.pData);  
+    dataPtr->time = timeInSeconds;  
+    
     m_context->Unmap(m_timeBuffer.Get(), 0);
 
     ID3D11Buffer *bufferArray[] = {m_timeBuffer.Get()};
     m_context->VSSetConstantBuffers(1, 1, bufferArray);
-}
+    m_context->PSSetConstantBuffers(1, 1, bufferArray);
+} 
 
 bool ExampleApp::Initialize() {
 
@@ -89,7 +90,7 @@ bool ExampleApp::Initialize() {
         return false;
 
     // 큐브 mapping 초기화
-    // InitializeCubeMapping();
+    InitializeCubeMapping();
 
     // 지구 텍스춰 출처
     // https://stackoverflow.com/questions/31799670/applying-map-of-the-earth-texture-a-sphere
@@ -158,7 +159,7 @@ bool ExampleApp::Initialize() {
     vector<D3D11_INPUT_ELEMENT_DESC> basicInputElements = {
         {"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
          D3D11_INPUT_PER_VERTEX_DATA, 0},
-        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3,
+        {"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 4 * 3, 
          D3D11_INPUT_PER_VERTEX_DATA, 0},
         {"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 4 * 3 + 4 * 3,
          D3D11_INPUT_PER_VERTEX_DATA, 0},
@@ -192,26 +193,27 @@ bool ExampleApp::Initialize() {
 
     AppBase::CreateVertexBuffer(normalVertices, m_normalLines->vertexBuffer);
     m_normalLines->m_indexCount = UINT(normalIndices.size());
-    AppBase::CreateIndexBuffer(normalIndices, m_normalLines->indexBuffer);
+    AppBase::CreateIndexBuffer(normalIndices, m_normalLines->indexBuffer); 
     AppBase::CreateConstantBuffer(m_normalVertexConstantBufferData,
-                                  m_normalLines->vertexConstantBuffer);
+                                  m_normalLines->vertexConstantBuffer); 
 
-    AppBase::CreateVertexShaderAndInputLayout(
+    AppBase::CreateVertexShaderAndInputLayout( 
         L"NormalVertexShader.hlsl", basicInputElements, m_normalVertexShader,
         m_basicInputLayout);
     AppBase::CreatePixelShader(L"NormalPixelShader.hlsl", m_normalPixelShader);
 
+    float iter = 0.0f;
     std::pair<float, float> xDirectionRange = {-10.0f, 10.0f};
     std::pair<float, float> zDirectionRange = {-10.0f, 10.0f};
     std::pair<float, float> speedRange = {1.0f, 2.0f};
-
+      
     float amplitudeFBM = 0.82f;
     for (int i = 0; i < MAX_WAVES; i++) {
         //waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)), 1.0f,
         //                     RandomFloat(speedRange), 0.0f};
-        waveData.waves[i] = {RandomFloat(xDirectionRange),
-                             RandomFloat(zDirectionRange),
+        waveData.waves[i] = {sin(iter), cos(iter),
                              RandomFloat(speedRange), 1.0f};
+        iter += 1232.39;
     };
 
     return true;
@@ -289,15 +291,15 @@ void ExampleApp::Update(float dt) {
                           m_mesh->pixelConstantBuffer);
 
     // 큐브 맵 MVP 설정
-    //m_BasicVertexConstantBufferData.model = Matrix();
+    m_BasicVertexConstantBufferData.model = Matrix();
 
-    //AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
-    //                      m_cubeMapping.cubeMesh->vertexConstantBuffer);
+    AppBase::UpdateBuffer(m_BasicVertexConstantBufferData,
+                          m_cubeMapping.cubeMesh->vertexConstantBuffer);
 
-    //m_BasicPixelConstantBufferData.material.diffuse =
-    //    Vector3(m_materialDiffuse);
-    //m_BasicPixelConstantBufferData.material.specular =
-    //    Vector3(m_materialSpecular);
+    m_BasicPixelConstantBufferData.material.diffuse =
+        Vector3(m_materialDiffuse);
+    m_BasicPixelConstantBufferData.material.specular =
+        Vector3(m_materialSpecular);
 
     // 노멀 벡터 그리기
     if (m_drawNormals && m_drawNormalsDirtyFlag) {
@@ -379,29 +381,28 @@ void ExampleApp::Render() {
     m_context->DrawIndexed(m_mesh->m_indexCount, 0, 0);
 
     // 큐브 매핑 Render()
-    //m_context->IASetInputLayout(m_cubeMapping.inputLayout.Get());
-    //m_context->IASetVertexBuffers(
-    //    0, 1, m_cubeMapping.cubeMesh->vertexBuffer.GetAddressOf(), &stride,
-    //    &offset);
-    //m_context->IASetIndexBuffer(m_cubeMapping.cubeMesh->indexBuffer.Get(),
-    //                            DXGI_FORMAT_R32_UINT, 0);
-    //m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    m_context->IASetInputLayout(m_cubeMapping.inputLayout.Get());
+    m_context->IASetVertexBuffers(
+        0, 1, m_cubeMapping.cubeMesh->vertexBuffer.GetAddressOf(), &stride,
+        &offset);
+    m_context->IASetIndexBuffer(m_cubeMapping.cubeMesh->indexBuffer.Get(),
+                                DXGI_FORMAT_R32_UINT, 0);
+    m_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    //m_context->VSSetShader(m_cubeMapping.vertexShader.Get(), 0, 0);
-    //m_context->VSSetConstantBuffers(
-    //    0, 1, m_cubeMapping.cubeMesh->vertexConstantBuffer.GetAddressOf());
-    //ID3D11ShaderResourceView *views[2] = {m_cubeMapping.diffuseResView.Get(),
-    //                                      m_cubeMapping.specularResView.Get()};
-    //m_context->PSSetShaderResources(0, 2, views);
-    //m_context->PSSetShader(m_cubeMapping.pixelShader.Get(), 0, 0);
-    //m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
+    m_context->VSSetShader(m_cubeMapping.vertexShader.Get(), 0, 0);
+    m_context->VSSetConstantBuffers(
+        0, 1, m_cubeMapping.cubeMesh->vertexConstantBuffer.GetAddressOf());
+    ID3D11ShaderResourceView *views[2] = {m_cubeMapping.diffuseResView.Get(),
+                                          m_cubeMapping.specularResView.Get()};
+    m_context->PSSetShaderResources(0, 2, views);
+    m_context->PSSetShader(m_cubeMapping.pixelShader.Get(), 0, 0);
+    m_context->PSSetSamplers(0, 1, m_samplerState.GetAddressOf());
 
-    //m_context->DrawIndexed(m_cubeMapping.cubeMesh->m_indexCount, 0, 0);
+    m_context->DrawIndexed(m_cubeMapping.cubeMesh->m_indexCount, 0, 0);
 
     // 노멀 벡터 그리기
     if (m_drawNormals) {
         m_context->VSSetShader(m_normalVertexShader.Get(), 0, 0);
-
         ID3D11Buffer *pptr[2] = {m_mesh->vertexConstantBuffer.Get(),
                                  m_normalLines->vertexConstantBuffer.Get()};
         m_context->VSSetConstantBuffers(0, 2, pptr);
@@ -453,7 +454,7 @@ void ExampleApp::UpdateGUI() {
     ImGui::SliderFloat("Material Diffuse", &m_materialDiffuse, 0.0f, 1.0f);
     ImGui::SliderFloat("Material Specular", &m_materialSpecular, 0.0f, 1.0f);
 
-    ImGui::SliderFloat3("Light Position", &m_lightFromGUI.position.x, -5.0f,
+    ImGui::SliderFloat3("Light Position", &m_lightFromGUI.position.x, -5.0f,   
                         5.0f);
 
     ImGui::SliderFloat("Light fallOffStart", &m_lightFromGUI.fallOffStart, 0.0f,
@@ -474,5 +475,4 @@ void ExampleApp::UpdateGUI() {
                            &waveData.waves[i].speed, 0.0f, 3.0f);
     }
 }
-
 } // namespace hlab

@@ -148,7 +148,7 @@ class AppBase {
     HWND m_mainWindow;
     UINT numQualityLevels = 0;
 
-    ComPtr<ID3D11Device> m_device;
+    ComPtr<ID3D11Device> m_device; 
     ComPtr<ID3D11DeviceContext> m_context;
     ComPtr<ID3D11RenderTargetView> m_renderTargetView;
     ComPtr<ID3D11RenderTargetView> m_renderTargetView2;
@@ -157,12 +157,12 @@ class AppBase {
     ComPtr<ID3D11RasterizerState> m_solidRasterizerSate;
     ComPtr<ID3D11RasterizerState> m_wireRasterizerSate;
     bool m_drawAsWire = false;
-
+     
     // Depth buffer 관련
-    ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
+    ComPtr<ID3D11Texture2D> m_depthStencilBuffer; 
     ComPtr<ID3D11DepthStencilView> m_depthStencilView;
-    ComPtr<ID3D11DepthStencilState> m_depthStencilState;
-
+    ComPtr<ID3D11DepthStencilState> m_depthStencilState; 
+    
     D3D11_VIEWPORT m_screenViewport;
 };
 } // namespace hlab

@@ -9,7 +9,7 @@
 #include "Mesh.h"
 #include "CubeMapping.h"
 
-#define MAX_WAVES 24
+#define MAX_WAVES 32
 
 namespace hlab {
 
@@ -17,9 +17,9 @@ using DirectX::SimpleMath::Matrix;
 using DirectX::SimpleMath::Vector2;
 using DirectX::SimpleMath::Vector3;
 using DirectX::SimpleMath::Vector4;
-
+ 
 // 조명
-struct Light {
+struct Light { 
     Vector3 strength = Vector3(0.5f);              // 12
     float fallOffStart = 0.0f;                     // 4
     Vector3 direction = Vector3(1.0f,-1.0f, 1.0f); // 12
@@ -33,7 +33,7 @@ struct BasicVertexConstantBuffer {
     Matrix invTranspose;
     Matrix view;
     Matrix projection;
-};
+}; 
 
 static_assert((sizeof(BasicVertexConstantBuffer) % 16) == 0,
               "Constant Buffer size must be 16-byte aligned");

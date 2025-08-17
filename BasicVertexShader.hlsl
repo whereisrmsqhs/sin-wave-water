@@ -1,7 +1,7 @@
 // safe header (ASCII only)
 #include "Common.hlsli"
 
-#define MAX_WAVES 24
+#define MAX_WAVES 32
 #define PI 3.1415926
 
 cbuffer BasicVertexConstantBuffer : register(b0)
@@ -53,8 +53,8 @@ PixelShaderInput main(VertexShaderInput input)
     float total_dy_dx = 0.0;
     float total_dy_dz = 0.0;
     
-    float amplitude = 0.09;
-    float waveLegnth = 2.0;
+    float amplitude = 0.05;
+    float waveLegnth = 1.3;
     
     float2 prevWave = float2(0, 0);
     float weight = 1.0;
