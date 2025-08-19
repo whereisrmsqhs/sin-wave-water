@@ -114,8 +114,8 @@ class ExampleApp : public AppBase {
     BasicPixelConstantBuffer m_BasicPixelConstantBufferData;
 
     bool m_usePerspectiveProjection = true;
-    Vector3 m_modelTranslation = Vector3(0.0f, 0.231f, 15.0f);
-    Vector3 m_modelRotation = Vector3(-0.286f, 0.163f, 0.0f);
+    Vector3 m_modelTranslation = Vector3(0.0f, 2.231f, 15.0f);
+    Vector3 m_modelRotation = Vector3(-0.16f, 0.163f, 0.0f);
     Vector3 m_modelScaling = Vector3(0.5f, 0.8f, 1.0f);
     float m_viewRot = 0.0f;
 
@@ -125,8 +125,8 @@ class ExampleApp : public AppBase {
 
     int m_lightType = 0;
     Light m_lightFromGUI;
-    float m_materialDiffuse = 0.289f;
-    float m_materialSpecular = 0.581f;
+    float m_materialDiffuse = 0.759f;
+    float m_materialSpecular = 0.796f;
 
     // 노멀 벡터 그리기
     ComPtr<ID3D11VertexShader> m_normalVertexShader;

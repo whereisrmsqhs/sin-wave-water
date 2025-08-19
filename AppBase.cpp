@@ -198,7 +198,7 @@ bool AppBase::InitMainWindow() {
                      NULL,
                      NULL,
                      NULL,
-                     L"HongLabGraphics", // lpszClassName, L-string
+                     L"Sin wave simul", // lpszClassName, L-string
                      NULL};
 
     // The RegisterClass function has been superseded by the RegisterClassEx
@@ -221,7 +221,7 @@ bool AppBase::InitMainWindow() {
     AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, false);
 
     // 윈도우를 만들때 위에서 계산한 wr 사용
-    m_mainWindow = CreateWindow(wc.lpszClassName, L"HongLabGraphics Example",
+    m_mainWindow = CreateWindow(wc.lpszClassName, L"Sin wave simulation",
                                 WS_OVERLAPPEDWINDOW,
                                 100,                // 윈도우 좌측 상단의 x 좌표
                                 100,                // 윈도우 좌측 상단의 y 좌표

@@ -207,14 +207,12 @@ bool ExampleApp::Initialize() {
     std::pair<float, float> zDirectionRange = {-10.0f, 10.0f};
     std::pair<float, float> speedRange = {1.0f, 2.0f};
       
-    float amplitudeFBM = 0.82f;
     for (int i = 0; i < MAX_WAVES; i++) {
-        //waveData.waves[i] = {static_cast<float>(pow(amplitudeFBM, i + 1)), 1.0f,
-        //                     RandomFloat(speedRange), 0.0f};
         waveData.waves[i] = {sin(iter), cos(iter),
                              RandomFloat(speedRange), 1.0f};
         iter += 1232.39;
     };
+
 
     return true;
 }
@@ -421,14 +419,7 @@ void ExampleApp::Render() {
 
 void ExampleApp::UpdateGUI() {
 
-    ImGui::Checkbox("Use Texture", &m_BasicPixelConstantBufferData.useTexture);
     ImGui::Checkbox("Wireframe", &m_drawAsWire);
-    ImGui::Checkbox("Draw Normals", &m_drawNormals);
-    if (ImGui::SliderFloat("Normal scale",
-                           &m_normalVertexConstantBufferData.scale, 0.0f,
-                           1.0f)) {
-        m_drawNormalsDirtyFlag = true;
-    }
     ImGui::SliderFloat3("m_modelTranslation", &m_modelTranslation.x, -10.0f,
                         10.0f);
     ImGui::SliderFloat3("m_modelRotation", &m_modelRotation.x, -3.14f, 3.14f);
@@ -439,39 +430,15 @@ void ExampleApp::UpdateGUI() {
                        &m_BasicPixelConstantBufferData.material.shiness, 1.0f,
                        256.0f);
 
-    if (ImGui::RadioButton("Directional Light", m_lightType == 0)) {
-        m_lightType = 0;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Point Light", m_lightType == 1)) {
-        m_lightType = 1;
-    }
-    ImGui::SameLine();
-    if (ImGui::RadioButton("Spot Light", m_lightType == 2)) {
-        m_lightType = 2;
-    }
-
     ImGui::SliderFloat("Material Diffuse", &m_materialDiffuse, 0.0f, 1.0f);
     ImGui::SliderFloat("Material Specular", &m_materialSpecular, 0.0f, 1.0f);
 
-    ImGui::SliderFloat3("Light Position", &m_lightFromGUI.position.x, -5.0f,   
-                        5.0f);
-
-    ImGui::SliderFloat("Light fallOffStart", &m_lightFromGUI.fallOffStart, 0.0f,
-                       5.0f);
-
-    ImGui::SliderFloat("Light fallOffEnd", &m_lightFromGUI.fallOffEnd, 0.0f,
-                       10.0f);
-
-    ImGui::SliderFloat("Light spotPower", &m_lightFromGUI.spotPower, 1.0f,
-                       512.0f);
-
     for (int i = 0; i < MAX_WAVES; ++i) {
-        ImGui::SliderFloat(("Amplitude " + std::to_string(i)).c_str(),
+        ImGui::SliderFloat(("X Direction " + std::to_string(i)).c_str(),
                            &waveData.waves[i].xDirection, -3.0f, 3.0f);
-        ImGui::SliderFloat(("WaveLength " + std::to_string(i)).c_str(),
+        ImGui::SliderFloat(("Z Direction " + std::to_string(i)).c_str(),
                            &waveData.waves[i].zDirection, -3.0f, 3.0f);
-        ImGui::SliderFloat(("Speed " + std::to_string(i)).c_str(),
+        ImGui::SliderFloat(("Wave Speed " + std::to_string(i)).c_str(),
                            &waveData.waves[i].speed, 0.0f, 3.0f);
     }
 }

@@ -57,17 +57,9 @@
   <ItemGroup>
     <None Include=".clang-format" />
     <None Include="Common.hlsli" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="crate2_diffuse.png">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="wall.jpg">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ojwD8.jpg">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="us.png">
       <Filter>Resource Files</Filter>
     </Image>

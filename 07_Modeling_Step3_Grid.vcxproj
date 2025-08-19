@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".clang-format" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\Standard-Cube-Map\diffusion.dds" />
@@ -158,9 +159,6 @@
     <Image Include="..\..\Standard-Cube-Map\specular.dds" />
     <Image Include="korea.jpg" />
     <Image Include="us.png" />
-    <Image Include="crate2_diffuse.png" />
-    <Image Include="ojwD8.jpg" />
-    <Image Include="wall.jpg" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="BasicPixelShader.hlsl">
