@@ -34,7 +34,7 @@ To build a fake water simulation using the sum of sine waves, and to apply as ma
 ## Core Logic
 A single sine wave was implemented through three stages.
 
-First, a basic wave animation was created by applying frequency and time * ¥õ to the sine function. Here, ¥õ = speed ¡¿ frequency, which represents the speed of the wave.
+First, a basic wave animation was created by applying frequency and time * Ï† to the sine function. Here, Ï† = speed * frequency, which represents the speed of the wave.
 
 Next, to express the effect of the wave surging upward, the sine function was transformed into an exponential function. The exponential curve resembles the cycle of a wave rising sharply and then flattening out, which is why the exponential function was adopted.
 
@@ -48,12 +48,15 @@ Finally, to simulate the effect of waves pushing against each other, domain warp
 - Mathematical modeling for realistic water simulation.
 
 ## Limitations & Future work
-- Current shading only supports Blinn-Phong; couldn¡¯t integrate IBL fully.
-- Small ripples¡¯ amplitude is too weak, reducing realism.
+- Current shading only supports Blinn-Phong; couldnÂ¡Â¯t integrate IBL fully.
+- Small ripplesÂ¡Â¯ amplitude is too weak, reducing realism.
 - CubeMap movement is not yet linked to wave lighting variation.
 
 ## Reference
 https://youtu.be/PH9q0HNBjT4?feature=shared
+
 https://www.shadertoy.com/view/MdXyzX
+
 https://developer.nvidia.com/gpugems/gpugems/part-i-natural-effects/chapter-1-effective-water-simulation-physical-models
+
 https://www.honglab.ai/courses/graphicspt2
