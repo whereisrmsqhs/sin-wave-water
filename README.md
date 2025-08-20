@@ -48,8 +48,8 @@ Finally, to simulate the effect of waves pushing against each other, domain warp
 - Mathematical modeling for realistic water simulation.
 
 ## Limitations & Future work
-- Current shading only supports Blinn-Phong; couldn¡¯t integrate IBL fully.
-- Small ripples¡¯ amplitude is too weak, reducing realism.
+- Current shading only supports Blinn-Phong; couldn't integrate IBL fully.
+- Small ripples' amplitude is too weak, reducing realism.
 - CubeMap movement is not yet linked to wave lighting variation.
 
 ## Reference
